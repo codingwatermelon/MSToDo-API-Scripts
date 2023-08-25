@@ -1,0 +1,48 @@
+# sources       https://github.com/thobach/MMM-MicrosoftToDo/tree/master
+#               https://learn.microsoft.com/en-us/graph/auth-v2-user?tabs=curl
+#               https://learn.microsoft.com/en-us/graph/api/todotasklist-list-tasks?view=graph-rest-1.0&tabs=http
+#               https://learn.microsoft.com/en-us/graph/api/resources/todo-overview?view=graph-rest-1.0
+#
+#               https://techcommunity.microsoft.com/t5/microsoft-365-developer-platform/endpoint-to-list-all-microsoft-todo-tasks-tagged-as-my-day/idi-p/2288760
+#               https://powerusers.microsoft.com/t5/Using-Connectors/Finding-To-Do-tasks-that-have-been-added-to-My-Day/m-p/1255639#M13183
+#               https://learn.microsoft.com/en-us/graph/api/todo-list-lists?view=graph-rest-1.0&tabs=http
+# azure portal  https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/~/CallAnAPI/quickStartType~/null/sourceType/Microsoft_AAD_IAM/appId/xxx/isMSAApp~/false/defaultBlade/Overview/appSignInAudience/AzureADandPersonalMicrosoftAccount/servicePrincipalCreated~/true
+#               https://learn.microsoft.com/en-us/azure/energy-data-services/how-to-generate-refresh-token
+# graph expl    https://developer.microsoft.com/en-us/graph/graph-explorer
+
+# Get client ID from Azure 
+
+# Get client secret from Azure
+
+# Get client secret ID from Azure
+
+# Authenticate app and get redirect uri from web browser
+https://login.microsoftonline.com/common/oauth2/v2.0/authorize?response_type=code&client_id=<CLIENT ID>&scope=offline_access%20user.read%20tasks.readwrite%20tasks.read&redirect_uri=https://localhost:1234&response_mode=query&state=12345
+
+# Redirected URL in web browser
+https://localhost:1234/?code=<REDACTED>&state=12345
+
+# Get auth code from url above
+
+# Generate refresh token
+curl.exe -X POST https://login.microsoftonline.com/common/oauth2/v2.0/token -H "Content-Type: application/x-www-form-urlencoded" -d "grant_type=authorization_code&client_id=<CLIENT ID>&scope=offline_access%20user.read%20tasks.readwrite%20tasks.read&code=<AUTH CODE>&redirect_uri=https%3A%2F%2Flocalhost%3A1234&client_secret=<CLIENT SECRET>"
+
+# Response from API call above
+{
+    "token_type":"Bearer",
+    "scope":"User.Read Tasks.ReadWrite Tasks.Read",
+    "expires_in":3600,
+    "ext_expires_in":3600,"access_token":"<ACCESS TOKEN>",
+    "refresh_token":"<REFRESH TOKEN>"
+}
+
+# Get refresh token from response above
+
+# Refresh access token using refresh token
+curl.exe --location --request POST 'https://login.microsoftonline.com/common/oauth2/v2.0/token' --header 'Content-Type: application/x-www-form-urlencoded' --data-urlencode 'client_id=<CLIENT ID>' --data-urlencode 'scope=User.Read Tasks.Read' --data-urlencode 'refresh_token=<REFRESH TOKEN>' --data-urlencode 'grant_type=refresh_token' --data-urlencode 'client_secret=<CLIENT SECRET>'
+
+# Response from API call above
+{"token_type":"Bearer","scope":"User.Read Tasks.Read Tasks.ReadWrite","expires_in":3600,"ext_expires_in":3600,"access_token":"<ACCESS TOKEN>"}
+
+# Request task lists in ms todo using access token from above
+curl.exe --location --request GET 'https://graph.microsoft.com/v1.0/me/todo/lists' --header 'Authorization: Bearer <ACCESS TOKEN>'
