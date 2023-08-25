@@ -57,7 +57,7 @@ def get_access_token(config, config_file):
 
     return response["access_token"]
 
-config_file = "T:\code\matrix\config.json"
+config_file = "T:\code\matrix\MSToDo-API-Scripts\config.json"
 
 config = read_config(config_file)
 
@@ -90,7 +90,7 @@ while not complete:
             access_token = get_access_token(config, config_file)
             config = read_config(config_file)
         else:
-            output_json_to_file(response, "T:\\code\\matrix\\" + datetime.datetime.now().strftime("%m%d%y-%H%M%S") + "_test.json")
+            output_json_to_file(response, "T:\\code\\matrix\\MSToDo-API-Scripts\\Archive\\" + datetime.datetime.now().strftime("%m%d%y-%H%M%S") + "_test.json")
 
             for task in response["value"]:
                 print(task["title"])
