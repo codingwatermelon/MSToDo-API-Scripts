@@ -78,30 +78,53 @@ while not complete:
     endpoint = graph_url + 'me/todo/lists/AQMkADAwATMwMAItZDE3NC04ZGIwLTAwAi0wMAoALgAAA5xW9ScynKZAl6KRnYxA_zEBAEJgWa_uuMhKtmNJGgQJ-1MAByfIjzEAAAA=/tasks'
 
     #endpoint = graph_url + 'me/todo/lists'
+
+    print("[DEBUG] Making GET request for info...")
+    response = requests.get(endpoint, headers=headers).json()
+
+    time.sleep(2)
+
+    if 'error' in response:
+        print("[INFO] Access token expired. Generating new access token...")
+        access_token = get_access_token(config, config_file)
+        config = read_config(config_file)
+    else:
+        output_json_to_file(response, "T:\\code\\matrix\\MSToDo-API-Scripts\\Archive\\" + datetime.datetime.now().strftime("%m%d%y-%H%M%S") + "_test.json")
+
+        tasks = {}
+
+        for task in response["value"]:
+            # Display "high" importance tasks only (until MS Graph API gets updated to allow me to get 'My Day' tasks)
+            if task["importance"] == "high":
+
+                # TODO Order tasks by due date 
+                # if "dueDateTime" in task and datetime.datetime.strptime(task["dueDateTime"]["dateTime"].split("T")[0], "%Y-%m-%d").date() == datetime.datetime.now().date():
+            
+                # Deal with duplicate task names
+                taskName = task["title"]
+                i = 1
+
+                while taskName in tasks:
+                    taskName = task["title"] + " (" + str(i) + ")"
+                    i+=1
+
+                # Use reminder time as "start" time for task
+                startTime = task["reminderDateTime"]["dateTime"].replace("T", " ").split(".")[0] if "reminderDateTime" in task else "none"
+
+                # Use body (notes) as tags (e.g., time duration for task, method of execution for task (e.g., pomodoro))                    
+                tags = task["body"]["content"].split("\n") if "body" in task else []
+
+                tasks[taskName] = {
+                    "startTime": startTime,   # e.g., 2023-08-25T16:00:00.0000000
+                    "tags": tags
+                }
+
+                #if "checklistItems" in task:
+                #    for item in task["checklistItems"]:
+                #        print(item["displayName"])
+
+        print(tasks)
+
+        complete = True
     
-    try:
-        print("[DEBUG] Making GET request for info...")
-        response = requests.get(endpoint, headers=headers).json()
 
-        time.sleep(2)
-
-        if 'error' in response:
-            print("[INFO] Access token expired. Generating new access token...")
-            access_token = get_access_token(config, config_file)
-            config = read_config(config_file)
-        else:
-            output_json_to_file(response, "T:\\code\\matrix\\MSToDo-API-Scripts\\Archive\\" + datetime.datetime.now().strftime("%m%d%y-%H%M%S") + "_test.json")
-
-            for task in response["value"]:
-                print(task["title"])
-                if "checklistItems" in task:
-                    for item in task["checklistItems"]:
-                        print(item["displayName"])
-
-            complete = True
-    # Generate new access token if current access token (stored in config.json) is expired
-    except:
-        print("[ERROR] Error occurred")
-        time.sleep(2)
-        
-    
